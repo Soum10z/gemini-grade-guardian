@@ -1,4 +1,5 @@
 
+import React from "react";
 import { NavBar } from "@/components/NavBar";
 import { DashboardCard } from "@/components/Dashboard/DashboardCard";
 import { useApp } from "@/contexts/AppContext";
@@ -13,27 +14,40 @@ import {
   UserCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const { assignments, userRole } = useApp();
+  const { assignments = [], userRole = 'teacher' } = useApp();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  // Add a console log to debug
+  console.log("Rendering Index page", { assignments, userRole });
   
   // Calculate statistics
   const totalAssignments = assignments.length;
   const activeAssignments = assignments.filter(a => a.status === 'active').length;
   const totalSubmissions = assignments.reduce((acc, assignment) => 
-    acc + assignment.submissions.length, 0);
+    acc + (assignment.submissions?.length || 0), 0);
   const gradedSubmissions = assignments.reduce((acc, assignment) => 
-    acc + assignment.submissions.filter(s => s.status === 'graded' || s.status === 'reviewed').length, 0);
+    acc + (assignment.submissions?.filter(s => s.status === 'graded' || s.status === 'reviewed')?.length || 0), 0);
 
-  const recentAssignments = assignments
+  const recentAssignments = [...(assignments || [])]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
   
-  const pendingSubmissions = assignments.reduce((acc, assignment) => {
-    const pending = assignment.submissions.filter(s => s.status === 'submitted');
+  const pendingSubmissions = (assignments || []).reduce((acc, assignment) => {
+    const pending = (assignment.submissions || []).filter(s => s.status === 'submitted');
     return [...acc, ...pending.map(p => ({ ...p, assignment }))];
   }, [] as Array<any>).slice(0, 3);
+
+  // Add a useful toast when the page loads to show it's working
+  React.useEffect(() => {
+    toast({
+      title: "Welcome to Grade Guardian",
+      description: "Your AI-powered teaching assistant is ready to help",
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
