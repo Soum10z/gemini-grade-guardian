@@ -8,6 +8,8 @@ interface DashboardCardProps {
   icon?: ReactNode;
   className?: string;
   children: ReactNode;
+  onClick?: () => void;
+  footer?: ReactNode;
 }
 
 export const DashboardCard = ({
@@ -16,9 +18,14 @@ export const DashboardCard = ({
   icon,
   className = "",
   children,
+  onClick,
+  footer,
 }: DashboardCardProps) => {
   return (
-    <Card className={`h-full ${className}`}>
+    <Card 
+      className={`h-full transition-all ${onClick ? 'hover:shadow-md cursor-pointer' : ''} ${className}`}
+      onClick={onClick}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
           <CardTitle className="text-lg font-medium">{title}</CardTitle>
@@ -27,6 +34,11 @@ export const DashboardCard = ({
         {icon && <div className="text-education-blue">{icon}</div>}
       </CardHeader>
       <CardContent>{children}</CardContent>
+      {footer && (
+        <div className="px-6 pb-4">
+          {footer}
+        </div>
+      )}
     </Card>
   );
 };

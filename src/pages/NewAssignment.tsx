@@ -1,0 +1,142 @@
+
+import { NavBar } from "@/components/NavBar";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { PlusSquare, ArrowLeft } from "lucide-react";
+
+const NewAssignment = () => {
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [course, setCourse] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [assignmentType, setAssignmentType] = useState("essay");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title || !description || !course || !dueDate) {
+      toast.error("Please fill out all required fields");
+      return;
+    }
+    
+    // Here we would typically save the new assignment
+    toast.success("Assignment created successfully");
+    navigate("/assignments");
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <NavBar />
+      
+      <div className="container mx-auto py-8 px-4">
+        <div className="mb-8">
+          <Button 
+            variant="ghost" 
+            className="flex items-center gap-2 mb-4"
+            onClick={() => navigate("/assignments")}
+          >
+            <ArrowLeft size={18} />
+            Back to Assignments
+          </Button>
+          
+          <div className="flex items-center gap-2">
+            <PlusSquare className="h-6 w-6 text-education-blue" />
+            <h1 className="text-3xl font-bold text-education-dark">Create New Assignment</h1>
+          </div>
+        </div>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Assignment Title*</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter assignment title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="course">Course*</Label>
+                  <Input
+                    id="course"
+                    placeholder="Enter course name"
+                    value={course}
+                    onChange={(e) => setCourse(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate">Due Date*</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="type">Assignment Type*</Label>
+                <Select value={assignmentType} onValueChange={setAssignmentType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select assignment type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="essay">Essay</SelectItem>
+                    <SelectItem value="report">Report</SelectItem>
+                    <SelectItem value="project">Project</SelectItem>
+                    <SelectItem value="quiz">Quiz</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Assignment Description*</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Enter detailed assignment instructions"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="min-h-32"
+                  required
+                />
+              </div>
+              
+              <div className="pt-4 flex justify-end gap-4">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => navigate("/assignments")}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-education-blue hover:bg-blue-700">
+                  Create Assignment
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default NewAssignment;
