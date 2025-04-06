@@ -15,6 +15,8 @@ import Settings from "./pages/Settings";
 import NewAssignment from "./pages/NewAssignment";
 import Auth from "./pages/Auth";
 import LessonPlanner from "./pages/LessonPlanner";
+import StudentDashboard from "./pages/StudentDashboard";
+import StudentSubmission from "./pages/StudentSubmission";
 import { useAuth } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
@@ -49,43 +51,85 @@ const TeacherRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/auth" element={<Auth />} />
-    <Route path="/assignments" element={
-      <ProtectedRoute>
-        <Assignments />
-      </ProtectedRoute>
-    } />
-    <Route path="/assignments/new" element={
-      <TeacherRoute>
-        <NewAssignment />
-      </TeacherRoute>
-    } />
-    <Route path="/assignments/:id" element={
-      <ProtectedRoute>
-        <AssignmentDetail />
-      </ProtectedRoute>
-    } />
-    <Route path="/submissions/:id" element={
-      <ProtectedRoute>
-        <SubmissionDetail />
-      </ProtectedRoute>
-    } />
-    <Route path="/lesson-planner" element={
-      <TeacherRoute>
-        <LessonPlanner />
-      </TeacherRoute>
-    } />
-    <Route path="/settings" element={
-      <ProtectedRoute>
-        <Settings />
-      </ProtectedRoute>
-    } />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+// Student only route component
+const StudentRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, profile, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (!user || profile?.role !== 'student') {
+    return <Navigate to="/" />;
+  }
+  
+  return <>{children}</>;
+};
+
+const AppRoutes = () => {
+  const { profile } = useAuth();
+  
+  return (
+    <Routes>
+      <Route path="/" element={
+        profile ? (
+          profile.role === 'student' ? 
+            <Navigate to="/student-dashboard" /> : 
+            <Navigate to="/assignments" />
+        ) : (
+          <Index />
+        )
+      } />
+      <Route path="/auth" element={<Auth />} />
+      
+      {/* Teacher routes */}
+      <Route path="/assignments" element={
+        <TeacherRoute>
+          <Assignments />
+        </TeacherRoute>
+      } />
+      <Route path="/assignments/new" element={
+        <TeacherRoute>
+          <NewAssignment />
+        </TeacherRoute>
+      } />
+      <Route path="/assignments/:id" element={
+        <ProtectedRoute>
+          <AssignmentDetail />
+        </ProtectedRoute>
+      } />
+      <Route path="/submissions/:id" element={
+        <ProtectedRoute>
+          <SubmissionDetail />
+        </ProtectedRoute>
+      } />
+      <Route path="/lesson-planner" element={
+        <TeacherRoute>
+          <LessonPlanner />
+        </TeacherRoute>
+      } />
+      
+      {/* Student routes */}
+      <Route path="/student-dashboard" element={
+        <StudentRoute>
+          <StudentDashboard />
+        </StudentRoute>
+      } />
+      <Route path="/assignments/:id/submit" element={
+        <StudentRoute>
+          <StudentSubmission />
+        </StudentRoute>
+      } />
+      
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

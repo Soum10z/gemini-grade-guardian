@@ -10,7 +10,9 @@ import {
   LogOut,
   User,
   Menu,
-  X
+  X,
+  Clipboard,
+  FileUp
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -45,6 +47,9 @@ export function NavBar() {
     navigate("/");
   };
 
+  const isStudent = profile?.role === 'student';
+  const isTeacher = profile?.role === 'teacher';
+
   return (
     <nav className="bg-white border-b py-3 px-4 md:px-6">
       <div className="container mx-auto">
@@ -66,19 +71,31 @@ export function NavBar() {
             </Link>
             {user && (
               <>
-                <Link
-                  to="/assignments"
-                  className="text-gray-700 hover:text-education-blue transition-colors"
-                >
-                  Assignments
-                </Link>
-                {profile?.role === "teacher" && (
-                  <Link
-                    to="/lesson-planner"
-                    className="text-gray-700 hover:text-education-blue transition-colors"
-                  >
-                    Lesson Planner
-                  </Link>
+                {isTeacher && (
+                  <>
+                    <Link
+                      to="/assignments"
+                      className="text-gray-700 hover:text-education-blue transition-colors"
+                    >
+                      Assignments
+                    </Link>
+                    <Link
+                      to="/lesson-planner"
+                      className="text-gray-700 hover:text-education-blue transition-colors"
+                    >
+                      Lesson Planner
+                    </Link>
+                  </>
+                )}
+                {isStudent && (
+                  <>
+                    <Link
+                      to="/student-dashboard"
+                      className="text-gray-700 hover:text-education-blue transition-colors"
+                    >
+                      My Dashboard
+                    </Link>
+                  </>
                 )}
               </>
             )}
@@ -155,23 +172,37 @@ export function NavBar() {
               </Link>
               {user && (
                 <>
-                  <Link
-                    to="/assignments"
-                    className="text-gray-700 hover:text-education-blue transition-colors px-2 py-1 rounded-md"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FileText className="inline mr-2 h-4 w-4" />
-                    Assignments
-                  </Link>
-                  {profile?.role === "teacher" && (
-                    <Link
-                      to="/lesson-planner"
-                      className="text-gray-700 hover:text-education-blue transition-colors px-2 py-1 rounded-md"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <BrainCircuit className="inline mr-2 h-4 w-4" />
-                      Lesson Planner
-                    </Link>
+                  {isTeacher && (
+                    <>
+                      <Link
+                        to="/assignments"
+                        className="text-gray-700 hover:text-education-blue transition-colors px-2 py-1 rounded-md"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <FileText className="inline mr-2 h-4 w-4" />
+                        Assignments
+                      </Link>
+                      <Link
+                        to="/lesson-planner"
+                        className="text-gray-700 hover:text-education-blue transition-colors px-2 py-1 rounded-md"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <BrainCircuit className="inline mr-2 h-4 w-4" />
+                        Lesson Planner
+                      </Link>
+                    </>
+                  )}
+                  {isStudent && (
+                    <>
+                      <Link
+                        to="/student-dashboard"
+                        className="text-gray-700 hover:text-education-blue transition-colors px-2 py-1 rounded-md"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Clipboard className="inline mr-2 h-4 w-4" />
+                        My Dashboard
+                      </Link>
+                    </>
                   )}
                   <Link
                     to="/settings"
