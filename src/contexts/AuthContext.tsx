@@ -31,6 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -48,12 +49,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Then check for existing session
     const initializeAuth = async () => {
       try {
+        console.log("Initializing auth...");
         const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log("Found existing session, fetching profile...");
           await fetchUserProfile(session.user.id);
+        } else {
+          console.log("No existing session found");
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -71,6 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log("Fetching profile for user:", userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -78,9 +84,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .single();
         
       if (error) {
+        console.error("Error fetching profile:", error);
         throw error;
       }
       
+      console.log("Profile data received:", data);
       setProfile(data as UserProfile);
     } catch (error) {
       console.error('Error fetching user profile:', error);

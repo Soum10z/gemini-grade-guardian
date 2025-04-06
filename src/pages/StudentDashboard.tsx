@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,6 +52,7 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     if (user) {
+      console.log("User authenticated, fetching student data:", user.id);
       fetchAssignments();
       fetchSubmissions();
       fetchPerformanceData();
@@ -61,13 +61,19 @@ const StudentDashboard = () => {
 
   const fetchAssignments = async () => {
     try {
+      console.log("Fetching active assignments...");
       const { data, error } = await supabase
         .from('assignments')
         .select('*')
         .eq('status', 'active')
         .order('due_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Assignment fetch error:", error);
+        throw error;
+      }
+      
+      console.log("Assignments fetched:", data?.length || 0);
       setAssignments(data || []);
     } catch (error) {
       console.error('Error fetching assignments:', error);
@@ -81,12 +87,18 @@ const StudentDashboard = () => {
     if (!user) return;
     
     try {
+      console.log("Fetching student submissions...");
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
         .eq('student_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Submission fetch error:", error);
+        throw error;
+      }
+      
+      console.log("Submissions fetched:", data?.length || 0);
       setSubmissions(data || []);
     } catch (error) {
       console.error('Error fetching submissions:', error);
@@ -106,8 +118,13 @@ const StudentDashboard = () => {
         .eq('student_id', user.id)
         .eq('status', 'graded');
 
-      if (error) throw error;
+      if (error) {
+        console.error("Performance data fetch error:", error);
+        throw error;
+      }
 
+      console.log("Graded submissions for performance metrics:", submissionData?.length || 0);
+      
       // Process submission data to create performance metrics
       const subjectMap = new Map<string, {
         total: number;
