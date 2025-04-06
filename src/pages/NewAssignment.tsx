@@ -10,14 +10,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PlusSquare, ArrowLeft } from "lucide-react";
+import { useApp } from "@/contexts/AppContext";
 
 const NewAssignment = () => {
   const navigate = useNavigate();
+  const { createAssignment } = useApp();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [course, setCourse] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [assignmentType, setAssignmentType] = useState("essay");
+  const [rubric, setRubric] = useState("");
+  const [subject, setSubject] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,9 +31,24 @@ const NewAssignment = () => {
       return;
     }
     
-    // Here we would typically save the new assignment
-    toast.success("Assignment created successfully");
-    navigate("/assignments");
+    try {
+      // Create the new assignment
+      createAssignment({
+        title,
+        description,
+        course,
+        dueDate,
+        rubric,
+        status: 'active',
+        subject: subject || undefined
+      });
+      
+      // Navigate to assignments list
+      navigate("/assignments");
+    } catch (error) {
+      console.error("Error creating assignment:", error);
+      toast.error("Failed to create assignment");
+    }
   };
 
   return (
@@ -91,20 +110,39 @@ const NewAssignment = () => {
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="type">Assignment Type*</Label>
-                <Select value={assignmentType} onValueChange={setAssignmentType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select assignment type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="essay">Essay</SelectItem>
-                    <SelectItem value="report">Report</SelectItem>
-                    <SelectItem value="project">Project</SelectItem>
-                    <SelectItem value="quiz">Quiz</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="type">Assignment Type*</Label>
+                  <Select value={assignmentType} onValueChange={setAssignmentType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select assignment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="essay">Essay</SelectItem>
+                      <SelectItem value="report">Report</SelectItem>
+                      <SelectItem value="project">Project</SelectItem>
+                      <SelectItem value="quiz">Quiz</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject Area</Label>
+                  <Select value={subject} onValueChange={setSubject}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select subject area" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="english">English</SelectItem>
+                      <SelectItem value="math">Mathematics</SelectItem>
+                      <SelectItem value="science">Science</SelectItem>
+                      <SelectItem value="history">History</SelectItem>
+                      <SelectItem value="computer science">Computer Science</SelectItem>
+                      <SelectItem value="general">General</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -117,6 +155,20 @@ const NewAssignment = () => {
                   className="min-h-32"
                   required
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="rubric">Grading Rubric</Label>
+                <Textarea
+                  id="rubric"
+                  placeholder="Enter grading criteria (e.g., Content: 40%, Organization: 20%, etc.)"
+                  value={rubric}
+                  onChange={(e) => setRubric(e.target.value)}
+                  className="min-h-32"
+                />
+                <p className="text-sm text-gray-500">
+                  A detailed rubric helps the AI provide more accurate grading and feedback
+                </p>
               </div>
               
               <div className="pt-4 flex justify-end gap-4">

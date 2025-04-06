@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { geminiService, GradingResult } from '@/services/geminiService';
+import { geminiService, GradingResult, SubjectMasteryData } from '@/services/geminiService';
 import { toast } from 'sonner';
 
 export interface Assignment {
@@ -12,6 +13,7 @@ export interface Assignment {
   rubric?: string;
   submissions: Submission[];
   createdAt: string;
+  subject?: string;
 }
 
 export interface Submission {
@@ -61,6 +63,7 @@ const sampleAssignments: Assignment[] = [
     course: 'English Literature 101',
     dueDate: '2025-04-15T23:59:59Z',
     status: 'active',
+    subject: 'english',
     rubric: `Thesis (20%): Clear, specific, and arguable thesis statement.
 Analysis (40%): Depth of analysis and critical thinking.
 Evidence (20%): Effective use of textual evidence.
@@ -76,6 +79,7 @@ Mechanics (10%): Grammar, spelling, and citation format.`,
     course: 'Computer Science 202',
     dueDate: '2025-04-10T23:59:59Z',
     status: 'active',
+    subject: 'computer science',
     rubric: `Implementation (50%): Correct implementation of data structure.
 Time Complexity (20%): Efficiency of algorithms.
 Code Quality (20%): Readability and organization.
@@ -136,6 +140,7 @@ class BinarySearchTree {
     course: 'Introduction to Psychology',
     dueDate: '2025-04-20T23:59:59Z',
     status: 'draft',
+    subject: 'science',
     submissions: [],
     createdAt: '2025-04-03T11:00:00Z'
   }
@@ -260,7 +265,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         assignmentText: targetSubmission.content,
         rubric: targetAssignment.rubric,
         studentName: targetSubmission.studentName,
-        courseContext: targetAssignment.course
+        courseContext: targetAssignment.course,
+        submissionContent: targetSubmission.content,
+        assignmentType: targetAssignment.title.toLowerCase().includes('essay') ? 'essay' : 
+                        targetAssignment.title.toLowerCase().includes('report') ? 'report' : 'general',
+        subject: targetAssignment.subject
       });
       
       // Update with grading result

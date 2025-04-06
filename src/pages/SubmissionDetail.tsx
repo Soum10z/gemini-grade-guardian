@@ -22,12 +22,15 @@ import {
   FileText, 
   MessageSquare, 
   User,
-  AlertCircle
+  AlertCircle,
+  Book,
+  TrendingUp
 } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Progress } from "@/components/ui/progress";
 
 const SubmissionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,12 +41,14 @@ const SubmissionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [teacherFeedback, setTeacherFeedback] = useState("");
   const [showRubric, setShowRubric] = useState(false);
+  const [showMastery, setShowMastery] = useState(true);
 
   useEffect(() => {
     if (id) {
       const submissionData = getSubmission(id);
       if (submissionData) {
         setSubmission(submissionData);
+        setTeacherFeedback(submissionData.teacherFeedback || "");
         const assignmentData = getAssignment(submissionData.assignmentId);
         if (assignmentData) {
           setAssignment(assignmentData);
@@ -309,6 +314,111 @@ const SubmissionDetail = () => {
                     </Accordion>
                   </div>
                 </CardContent>
+              </Card>
+            )}
+
+            {submission.gradingResult?.subjectMastery && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <Book className="mr-2 h-5 w-5 text-indigo-500" />
+                      Subject Mastery Analysis
+                    </CardTitle>
+                    <CardDescription>
+                      AI assessment of student concept mastery
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowMastery(!showMastery)}
+                  >
+                    {showMastery ? (
+                      <>
+                        <ChevronUp className="h-4 w-4 mr-2" />
+                        Hide
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4 mr-2" />
+                        Show
+                      </>
+                    )}
+                  </Button>
+                </CardHeader>
+                {showMastery && (
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex justify-between mb-2">
+                          <h3 className="font-medium text-gray-700">Overall Mastery</h3>
+                          <span className="font-medium">{submission.gradingResult.subjectMastery.overallMastery}%</span>
+                        </div>
+                        <Progress value={submission.gradingResult.subjectMastery.overallMastery} className="h-2" />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-green-50 p-3 rounded-md border border-green-100">
+                          <h4 className="font-medium text-green-700 mb-2">Mastered Concepts</h4>
+                          <ul className="text-sm space-y-1">
+                            {submission.gradingResult.subjectMastery.conceptsMastered.map((concept: string, i: number) => (
+                              <li key={i} className="flex items-center">
+                                <CheckCircle className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
+                                {concept}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-amber-50 p-3 rounded-md border border-amber-100">
+                          <h4 className="font-medium text-amber-700 mb-2">In Progress</h4>
+                          <ul className="text-sm space-y-1">
+                            {submission.gradingResult.subjectMastery.conceptsInProgress.map((concept: string, i: number) => (
+                              <li key={i} className="flex items-center">
+                                <TrendingUp className="h-3 w-3 text-amber-500 mr-2 flex-shrink-0" />
+                                {concept}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-red-50 p-3 rounded-md border border-red-100">
+                          <h4 className="font-medium text-red-700 mb-2">Needs Improvement</h4>
+                          <ul className="text-sm space-y-1">
+                            {submission.gradingResult.subjectMastery.conceptsToImprove.map((concept: string, i: number) => (
+                              <li key={i} className="flex items-center">
+                                <AlertCircle className="h-3 w-3 text-red-500 mr-2 flex-shrink-0" />
+                                {concept}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-gray-700 mb-3">Growth Opportunities</h4>
+                        <div className="space-y-4">
+                          {submission.gradingResult.subjectMastery.growthAreas.map((area: any, i: number) => (
+                            <div key={i} className="border rounded-md p-3">
+                              <div className="flex justify-between mb-1">
+                                <h5 className="font-medium">{area.concept}</h5>
+                                <span className="text-sm">{area.currentLevel}%</span>
+                              </div>
+                              <Progress value={area.currentLevel} className="h-1.5 mb-2" />
+                              <p className="text-sm text-gray-500 mb-2">Suggested activities:</p>
+                              <ul className="text-sm list-disc pl-5 space-y-1">
+                                {area.suggestedActivities.map((activity: string, j: number) => (
+                                  <li key={j}>{activity}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                )}
               </Card>
             )}
 
