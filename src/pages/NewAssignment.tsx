@@ -74,19 +74,23 @@ const NewAssignment = () => {
         questionFileName = questionFile.name;
       }
       
-      // Create the assignment in the database
-      const { data, error } = await supabase.from('assignments').insert({
-        title,
-        description,
-        course,
-        due_date: new Date(dueDate).toISOString(),
-        subject: subject || null,
-        rubric: rubric || null,
-        status: 'active',
-        teacher_id: user.id,
-        question_file_path: questionFilePath,
-        question_file_name: questionFileName
-      }).select().single();
+      // Fix: Use typed query for assignments table
+      const { data, error } = await supabase
+        .from('assignments')
+        .insert({
+          title,
+          description,
+          course,
+          due_date: new Date(dueDate).toISOString(),
+          subject: subject || null,
+          rubric: rubric || null,
+          status: 'active',
+          teacher_id: user.id,
+          question_file_path: questionFilePath,
+          question_file_name: questionFileName
+        })
+        .select()
+        .single();
       
       if (error) {
         throw error;

@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -55,6 +54,7 @@ const LessonPlanner = () => {
   
   const fetchLessonPlans = async () => {
     try {
+      // Fix: Use typed query for lesson_plans table
       const { data, error } = await supabase
         .from('lesson_plans')
         .select('*')
@@ -117,10 +117,10 @@ const LessonPlanner = () => {
     }
   };
   
-  // Fetch lesson plans when component loads
-  useState(() => {
+  // Fix: Change useState to useEffect for fetching lesson plans on component mount
+  useEffect(() => {
     fetchLessonPlans();
-  });
+  }, []);
   
   return (
     <div className="min-h-screen bg-gray-50">

@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { LockKeyhole, UserRound, Graduation, School, ChevronLeft } from "lucide-react";
+import { LockKeyhole, UserRound, GraduationCap, School, ChevronLeft } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -217,7 +217,7 @@ const Auth = () => {
                       <SelectContent>
                         <SelectItem value="student">
                           <div className="flex items-center">
-                            <Graduation className="mr-2 h-4 w-4" />
+                            <GraduationCap className="mr-2 h-4 w-4" />
                             Student
                           </div>
                         </SelectItem>
