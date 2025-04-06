@@ -25,7 +25,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-education-blue"></div>
+    </div>;
   }
   
   if (!user) {
@@ -40,11 +42,13 @@ const TeacherRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-education-blue"></div>
+    </div>;
   }
   
   if (!user || profile?.role !== 'teacher') {
-    return <Navigate to="/" />;
+    return <Navigate to="/auth" />;
   }
   
   return <>{children}</>;
@@ -55,11 +59,13 @@ const StudentRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-education-blue"></div>
+    </div>;
   }
   
   if (!user || profile?.role !== 'student') {
-    return <Navigate to="/" />;
+    return <Navigate to="/auth" />;
   }
   
   return <>{children}</>;

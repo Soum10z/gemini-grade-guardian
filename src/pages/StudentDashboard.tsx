@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { NavBar } from "@/components/NavBar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -73,7 +74,7 @@ const StudentDashboard = () => {
         throw error;
       }
       
-      console.log("Assignments fetched:", data?.length || 0);
+      console.log("Assignments fetched:", data?.length || 0, data);
       setAssignments(data || []);
     } catch (error) {
       console.error('Error fetching assignments:', error);
@@ -98,7 +99,7 @@ const StudentDashboard = () => {
         throw error;
       }
       
-      console.log("Submissions fetched:", data?.length || 0);
+      console.log("Submissions fetched:", data?.length || 0, data);
       setSubmissions(data || []);
     } catch (error) {
       console.error('Error fetching submissions:', error);
@@ -114,7 +115,7 @@ const StudentDashboard = () => {
       // For now, we'll generate sample data based on the user's submissions
       const { data: submissionData, error } = await supabase
         .from('submissions')
-        .select('*, assignments!inner(*)')
+        .select('*, assignments(*)')
         .eq('student_id', user.id)
         .eq('status', 'graded');
 
@@ -133,7 +134,7 @@ const StudentDashboard = () => {
       }>();
 
       submissionData?.forEach((submission: any) => {
-        const subject = submission.assignments.subject || 'General';
+        const subject = submission.assignments?.subject || 'General';
         const score = submission.grading_result?.score || 0;
         
         if (!subjectMap.has(subject)) {
