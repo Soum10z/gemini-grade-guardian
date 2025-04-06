@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { PlusSquare, ArrowLeft } from "lucide-react";
-import { useApp } from "@/contexts/AppContext";
+import { PlusSquare, ArrowLeft, Upload, XCircle, FileText } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from 'uuid';
 
 const NewAssignment = () => {
   const navigate = useNavigate();
-  const { createAssignment } = useApp();
+  const { user, profile } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [course, setCourse] = useState("");
@@ -22,8 +24,26 @@ const NewAssignment = () => {
   const [assignmentType, setAssignmentType] = useState("essay");
   const [rubric, setRubric] = useState("");
   const [subject, setSubject] = useState("");
+  const [questionFile, setQuestionFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  if (!user || profile?.role !== 'teacher') {
+    navigate("/");
+    toast.error("Only teachers can create assignments");
+    return null;
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setQuestionFile(e.target.files[0]);
+    }
+  };
+
+  const removeFile = () => {
+    setQuestionFile(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title || !description || !course || !dueDate) {
@@ -32,22 +52,53 @@ const NewAssignment = () => {
     }
     
     try {
-      // Create the new assignment
-      createAssignment({
+      setIsUploading(true);
+      
+      let questionFilePath = null;
+      let questionFileName = null;
+      
+      // Upload file if provided
+      if (questionFile) {
+        const fileExt = questionFile.name.split('.').pop();
+        const filePath = `${user.id}/${uuidv4()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('assignment_files')
+          .upload(filePath, questionFile);
+          
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        questionFilePath = filePath;
+        questionFileName = questionFile.name;
+      }
+      
+      // Create the assignment in the database
+      const { data, error } = await supabase.from('assignments').insert({
         title,
         description,
         course,
-        dueDate,
-        rubric,
+        due_date: new Date(dueDate).toISOString(),
+        subject: subject || null,
+        rubric: rubric || null,
         status: 'active',
-        subject: subject || undefined
-      });
+        teacher_id: user.id,
+        question_file_path: questionFilePath,
+        question_file_name: questionFileName
+      }).select().single();
       
-      // Navigate to assignments list
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Assignment created successfully");
       navigate("/assignments");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating assignment:", error);
-      toast.error("Failed to create assignment");
+      toast.error(error.message || "Failed to create assignment");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -158,6 +209,56 @@ const NewAssignment = () => {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="questionFile">Question File</Label>
+                <div className="border-2 border-dashed rounded-md p-6 bg-gray-50">
+                  {!questionFile ? (
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Upload className="h-8 w-8 text-gray-400" />
+                      <p className="text-sm text-gray-500">Drag & drop a file here, or click to select</p>
+                      <Input
+                        id="questionFile"
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        accept=".pdf,.doc,.docx,.txt,.jpg,.png"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('questionFile')?.click()}
+                      >
+                        Select File
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-blue-50 p-3 rounded">
+                      <div className="flex items-center">
+                        <FileText className="h-5 w-5 text-blue-500 mr-2" />
+                        <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
+                          {questionFile.name}
+                        </span>
+                        <span className="text-xs text-gray-500 ml-2">
+                          ({(questionFile.size / 1024).toFixed(0)} KB)
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeFile}
+                        className="text-gray-500 hover:text-red-500"
+                      >
+                        <XCircle className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">
+                  Upload assignment questions, files, or additional materials (Max size: 5MB)
+                </p>
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="rubric">Grading Rubric</Label>
                 <Textarea
                   id="rubric"
@@ -179,8 +280,12 @@ const NewAssignment = () => {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-education-blue hover:bg-blue-700">
-                  Create Assignment
+                <Button 
+                  type="submit" 
+                  className="bg-education-blue hover:bg-blue-700"
+                  disabled={isUploading}
+                >
+                  {isUploading ? "Creating..." : "Create Assignment"}
                 </Button>
               </div>
             </form>
